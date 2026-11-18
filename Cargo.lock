@@ -279,7 +279,8 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 [[package]]
 name = "poa-consensus"
 version = "0.7.0"
-source = "git+https://github.com/Psy-Fer/poa-consensus?tag=v0.7.0#f90b3dd92a9de9121791231b9b8bbdbd92d67e24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0af1c282539584d1cde81a459762e3f051d296ff0980eed1efa0baee5e85912"
 
 [[package]]
 name = "polish_gfa"
@@ -326,7 +327,8 @@ dependencies = [
 [[package]]
 name = "rapidgzip-core"
 version = "0.3.1"
-source = "git+https://github.com/COMBINE-lab/rapidgzip-rust?tag=v0.3.1#88353ec4c8aef1913bb1ca89dbe37eefe6c9ea8c"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da5be74bd353811db3efff881e87200a18150d72fb0b1d39ea04e7972a5b4ca1"
 dependencies = [
  "bon",
  "crossbeam-deque",

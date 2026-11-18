@@ -16,7 +16,9 @@ standalone Rust implementation with byte-identical outputs.
 ## Build
 
 Requires Rust ≥ 1.88 (both `poa-consensus` and `rapidgzip-core` are edition
-2024). The first build fetches the pinned crates from GitHub.
+2024). Dependencies come from crates.io: `poa-consensus 0.7.0` and
+`rapidgzip-core 0.3.1`; `Cargo.lock` pins their checksums. No git submodules are
+needed.
 
 ```bash
 cargo build --release

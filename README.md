@@ -7,12 +7,6 @@ produced it, rebuilds tandem arrays from the spanning reads with
 mode, and writes a polished GFA/FASTA plus a per-locus TSV report. The input
 GFA is never modified.
 
-This is a Rust-only port of the `poa-test/polish_gfa` tool that was developed
-inside hifiasm-fast. It calls the `poa-consensus` crate directly (no C++ and no
-C ABI shim) and is independent of that tree: hifiasm-fast keeps its in-tree
-integration and `poa-test/polish_gfa`, while this repository provides the
-standalone Rust implementation with byte-identical outputs.
-
 ## Build
 
 Requires Rust ≥ 1.88 (both `poa-consensus` and `rapidgzip-core` are edition

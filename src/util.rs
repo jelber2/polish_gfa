@@ -81,3 +81,50 @@ pub fn strip_gfa_suffix(fn_: &str) -> &str {
     }
     fn_
 }
+
+/// Peak resident set size of this process, in bytes.
+#[cfg(target_os = "linux")]
+fn peak_rss_bytes() -> Option<u64> {
+    let status = std::fs::read_to_string("/proc/self/status").ok()?;
+    for line in status.lines() {
+        if let Some(rest) = line.strip_prefix("VmHWM:") {
+            let kib: u64 = rest.split_whitespace().next()?.parse().ok()?;
+            return Some(kib * 1024);
+        }
+    }
+    None
+}
+
+#[cfg(all(unix, not(target_os = "linux")))]
+fn peak_rss_bytes() -> Option<u64> {
+    unsafe {
+        let mut ru: libc::rusage = std::mem::zeroed();
+        if libc::getrusage(libc::RUSAGE_SELF, &mut ru) == 0 {
+            let n = ru.ru_maxrss as u64;
+            #[cfg(target_os = "macos")]
+            {
+                Some(n)
+            }
+            #[cfg(all(unix, not(target_os = "macos"), not(target_os = "linux")))]
+            {
+                Some(n * 1024)
+            }
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(not(unix))]
+fn peak_rss_bytes() -> Option<u64> {
+    None
+}
+
+/// Print the process peak RSS. Intended as the last log line.
+pub fn log_peak_rss() {
+    if let Some(bytes) = peak_rss_bytes() {
+        let gib = bytes as f64 / (1u64 << 30) as f64;
+        let mib = bytes / (1u64 << 20);
+        eprintln!("[polish_gfa] peak RSS: {gib:.2} GiB ({mib} MiB)");
+    }
+}

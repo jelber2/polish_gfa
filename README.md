@@ -134,6 +134,19 @@ gzip floor.
 FASTA input does **not** reduce index memory; it only cuts decompression and
 parsing time. `kseq`-style FASTA and FASTQ are both accepted.
 
+## Monitoring
+
+The **last line of each log** is the process peak RSS, for example:
+
+```
+[polish_gfa] peak RSS: 18.42 GiB (18890 MiB)
+```
+
+On Linux this comes from `/proc/self/status` `VmHWM`; on other Unix systems
+from `getrusage(RUSAGE_SELF)`. It covers the whole run (detection, index,
+streaming, POA and output), so it is a convenient value to record next to a
+long WGS run.
+
 ## Tests
 
 ```bash

@@ -43,6 +43,11 @@ check_body() {
 }
 
 run base reads.fq.gz --gfa base.bp.p_ctg.gfa -t 8
+if ! tail -n 1 run.log | grep -q "peak RSS"; then
+    echo "FAIL: last log line is not the peak RSS report"
+    exit 1
+fi
+echo "ok: peak RSS is the last log line"
 check base.bp.p_ctg.poa.tsv base.poa.tsv
 check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
 check base.bp.p_ctg.poa.fa base.bp.p_ctg.poa.fa

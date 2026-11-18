@@ -98,13 +98,18 @@ struct Args {
 }
 
 fn main() {
-    if let Err(e) = real_main() {
-        eprintln!("polish_gfa: {e:#}");
-        std::process::exit(1);
-    }
+    let code = match real_main() {
+        Ok(code) => code,
+        Err(e) => {
+            eprintln!("polish_gfa: {e:#}");
+            1
+        }
+    };
+    util::log_peak_rss();
+    std::process::exit(code);
 }
 
-fn real_main() -> Result<()> {
+fn real_main() -> Result<i32> {
     let args = Args::parse();
 
     let reads = args.paths.clone();
@@ -190,7 +195,5 @@ fn real_main() -> Result<()> {
         debug_dir: std::env::var("POA_POLISH_DEBUG_DIR").ok(),
     };
 
-    let code =
-        polish::run(&opts).with_context(|| format!("polishing {} GFA(s)", opts.gfas.len()))?;
-    std::process::exit(code);
+    polish::run(&opts).with_context(|| format!("polishing {} GFA(s)", opts.gfas.len()))
 }

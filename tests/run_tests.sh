@@ -31,21 +31,21 @@ check() {
     echo "ok: $got"
 }
 
-run base reads.fq.gz -t 8
-check base.poa.tsv base.poa.tsv
+run base reads.fq.gz --gfa base.bp.p_ctg.gfa -t 8
+check base.bp.p_ctg.poa.tsv base.poa.tsv
 check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
 check base.bp.p_ctg.poa.fa base.bp.p_ctg.poa.fa
 
-rm -f base.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
-run degraded reads.fq.gz -t 8 --index-chunk 2
-check degraded.poa.tsv degraded.poa.tsv
+rm -f base.bp.p_ctg.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
+run degraded reads.fq.gz --gfa degraded.p_ctg.gfa -t 8 --index-chunk 2
+check degraded.p_ctg.poa.tsv degraded.poa.tsv
 check degraded.p_ctg.poa.gfa degraded.p_ctg.poa.gfa
 check degraded.p_ctg.poa.fa degraded.p_ctg.poa.fa
 
 if command -v rapidgzip >/dev/null 2>&1; then
-    rm -f base.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
-    run base reads.fq.gz -t 8 --decompressor rapidgzip --gzip-threads 4
-    check base.poa.tsv base.poa.tsv
+    rm -f base.bp.p_ctg.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
+    run base reads.fq.gz --gfa base.bp.p_ctg.gfa -t 8 --decompressor rapidgzip --gzip-threads 4
+    check base.bp.p_ctg.poa.tsv base.poa.tsv
     check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
 fi
 

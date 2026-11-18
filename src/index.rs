@@ -123,4 +123,3 @@ pub fn build_index(loci: &[Locus], idx: &mut SeedIndex, begin: usize, end: usize
         }
     }
 }
-

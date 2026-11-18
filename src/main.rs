@@ -6,7 +6,6 @@ mod recruit;
 mod tr;
 mod util;
 
-
 use anyhow::{bail, Context, Result};
 use clap::Parser;
 
@@ -20,13 +19,17 @@ use model::{Decompressor, Opts};
     long_about = None
 )]
 struct Args {
-    /// Assembly prefix (or use -o) followed by read files.
-    #[arg(value_name = "PATH", num_args = 0..)]
+    /// Read files (FASTQ/FASTA, optionally gzip-compressed).
+    #[arg(value_name = "READS", num_args = 0..)]
     paths: Vec<String>,
 
-    /// Assembly prefix (alternative to the first positional argument).
-    #[arg(short = 'o', long = "output-prefix", value_name = "PREFIX")]
-    output: Option<String>,
+    /// Hifiasm contig GFA to polish. Repeatable (or comma-separated).
+    #[arg(long = "gfa", value_name = "GFA", required = true, action = clap::ArgAction::Append, value_delimiter = ',')]
+    gfa: Vec<String>,
+
+    /// TSV report path [default: <first-gfa-without-.gfa>.poa.tsv].
+    #[arg(long = "tsv", value_name = "FILE")]
+    tsv: Option<String>,
 
     /// Stream/POA worker threads [default: all available CPUs].
     #[arg(short = 't', long = "threads", value_name = "INT")]
@@ -99,25 +102,12 @@ fn main() {
 fn real_main() -> Result<()> {
     let args = Args::parse();
 
-    let (prefix, reads) = match &args.output {
-        Some(p) => (p.clone(), args.paths.clone()),
-        None => {
-            if args.paths.len() < 2 {
-                bail!("missing assembly prefix and read files; try --help");
-            }
-            (args.paths[0].clone(), args.paths[1..].to_vec())
-        }
-    };
-    if prefix.is_empty() {
-        bail!("assembly prefix must not be empty");
-    }
-    if prefix.ends_with(".gfa") || prefix.ends_with(".gfa.gz") {
-        bail!(
-            "'{prefix}' looks like a GFA filename, but an assembly prefix is expected (e.g. 'asm' for 'asm.bp.p_ctg.gfa')"
-        );
-    }
+    let reads = args.paths.clone();
     if reads.is_empty() {
-        bail!("missing read file(s)");
+        bail!("missing read file(s); usage: polish_gfa --gfa <GFA> <reads...>");
+    }
+    if args.gfa.is_empty() {
+        bail!("missing --gfa <assembly.gfa>");
     }
 
     let threads = args
@@ -177,7 +167,8 @@ fn real_main() -> Result<()> {
     };
 
     let opts = Opts {
-        prefix: prefix.clone(),
+        gfas: args.gfa.clone(),
+        tsv: args.tsv.clone(),
         reads,
         threads,
         flank_len: args.flank,
@@ -194,6 +185,7 @@ fn real_main() -> Result<()> {
         debug_dir: std::env::var("POA_POLISH_DEBUG_DIR").ok(),
     };
 
-    let code = polish::run(&opts).with_context(|| format!("polishing prefix '{}'", opts.prefix))?;
+    let code =
+        polish::run(&opts).with_context(|| format!("polishing {} GFA(s)", opts.gfas.len()))?;
     std::process::exit(code);
 }

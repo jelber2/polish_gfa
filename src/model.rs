@@ -26,7 +26,8 @@ pub enum Decompressor {
 
 #[derive(Clone, Debug)]
 pub struct Opts {
-    pub prefix: String,
+    pub gfas: Vec<String>,
+    pub tsv: Option<String>,
     pub reads: Vec<String>,
     pub threads: usize,
     pub flank_len: i32,

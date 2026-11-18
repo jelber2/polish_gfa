@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::time::Instant;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use poa_consensus::{consensus, consensus_flanked, PoaConfig};
 use rustc_hash::FxHashSet;
 
@@ -613,6 +613,9 @@ fn polish_one_gfa(gfa: &str, opts: &Opts, tsv: &mut dyn Write, c: &mut Counters)
     }
 
     // Pass 2: patch and write.
+    let seg_before = c.n_seg;
+    let patched_before = c.n_seg_patched;
+    let poa_before = c.poa_secs;
     let base = strip_gfa_suffix(gfa);
     let out_path = format!("{base}.poa.gfa");
     let fa_path = format!("{base}.poa.fa");
@@ -714,13 +717,13 @@ fn polish_one_gfa(gfa: &str, opts: &Opts, tsv: &mut dyn Write, c: &mut Counters)
     eprintln!(
         "[polish_gfa] {}: {} contig(s), {} polished; timing: detect {:.2}s, index {:.2}s, stream {:.2}s, patch {:.2}s (poa {:.2}s), total {:.2}s",
         gfa,
-        c.n_seg,
-        c.n_seg_patched,
+        c.n_seg - seg_before,
+        c.n_seg_patched - patched_before,
         t_detect,
         t_index_total,
         t_stream_total,
         t_end - t_detect - t_index_total - t_stream_total,
-        c.poa_secs,
+        c.poa_secs - poa_before,
         t_end
     );
     Ok(())
@@ -755,32 +758,15 @@ pub fn run(opts: &Opts) -> Result<i32> {
         opts.max_locus_len
     );
 
-    const SUFFIXES: &[&str] = &[
-        ".p_ctg.gfa",
-        ".a_ctg.gfa",
-        ".bp.p_ctg.gfa",
-        ".bp.hap1.p_ctg.gfa",
-        ".bp.hap2.p_ctg.gfa",
-        ".hap1.p_ctg.gfa",
-        ".hap2.p_ctg.gfa",
-        ".stg.p_ctg.gfa",
-    ];
-    let mut candidates = Vec::new();
-    for suf in SUFFIXES {
-        let fn_ = format!("{}{}", opts.prefix, suf);
-        if Path::new(&fn_).is_file() {
-            candidates.push(fn_);
+    for g in &opts.gfas {
+        if !Path::new(g).is_file() {
+            bail!("GFA not found: {g}");
         }
     }
-    if candidates.is_empty() {
-        eprintln!(
-            "[polish_gfa] no contig GFA found for prefix {}; skipping",
-            opts.prefix
-        );
-        return Ok(1);
-    }
-
-    let tsv_path = format!("{}.poa.tsv", opts.prefix);
+    let tsv_path = opts
+        .tsv
+        .clone()
+        .unwrap_or_else(|| format!("{}.poa.tsv", strip_gfa_suffix(&opts.gfas[0])));
     let mut tsv =
         BufWriter::new(File::create(&tsv_path).with_context(|| format!("create {tsv_path}"))?);
     writeln!(
@@ -789,9 +775,9 @@ pub fn run(opts: &Opts) -> Result<i32> {
     )?;
 
     let mut c = Counters::default();
-    for fn_ in &candidates {
-        if let Err(e) = polish_one_gfa(fn_, opts, &mut tsv, &mut c) {
-            eprintln!("[polish_gfa] {fn_}: {e:#}");
+    for gfa in &opts.gfas {
+        if let Err(e) = polish_one_gfa(gfa, opts, &mut tsv, &mut c) {
+            eprintln!("[polish_gfa] {gfa}: {e:#}");
         }
     }
     tsv.flush()?;

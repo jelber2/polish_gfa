@@ -1,0 +1,65 @@
+{
+  "reference": "sim_haplotype",
+  "reference_length": 371600,
+  "coverage": 30.000742734122714,
+  "n_reads": 1437,
+  "n50": 10263,
+  "mean_read_len": 7758.020876826722,
+  "loci": [
+    {
+      "name": "VNTR_A",
+      "start": 30000,
+      "end": 30882,
+      "unit": "GGTGTGGGACAGGTGTGGGAC",
+      "unit_len": 21,
+      "copies": 42,
+      "length": 882
+    },
+    {
+      "name": "VNTR_B",
+      "start": 95000,
+      "end": 96520,
+      "unit": "CCTAGGCAGTCCATGGACTTCAGGTCAGTCCATGGACT",
+      "unit_len": 38,
+      "copies": 40,
+      "length": 1520
+    },
+    {
+      "name": "VNTR_C",
+      "start": 165000,
+      "end": 173160,
+      "unit": "TTCCAGGCTAGGTACCGATGCTAGGCATCCGATTCGAGGCCTAGGTACCGA",
+      "unit_len": 51,
+      "copies": 160,
+      "length": 8160
+    },
+    {
+      "name": "STR_D",
+      "start": 240000,
+      "end": 240900,
+      "unit": "CAG",
+      "unit_len": 3,
+      "copies": 300,
+      "length": 900
+    },
+    {
+      "name": "VNTR_E",
+      "start": 300000,
+      "end": 304930,
+      "unit": "AAAAGAAGAGGGAAAGGGAGAAAAGAGGG",
+      "unit_len": 29,
+      "copies": 170,
+      "length": 4930
+    },
+    {
+      "name": "VNTR_F",
+      "start": 360000,
+      "end": 363600,
+      "unit": "AAG",
+      "unit_len": 3,
+      "copies": 1200,
+      "length": 3600
+    }
+  ],
+  "seed": 5
+}

@@ -1,0 +1,7 @@
+/target
+tests/data/**/*.poa.gfa
+tests/data/**/*.poa.fa
+tests/data/**/*.poa.tsv
+__pycache__/
+*.pyc
+tests/data/**/run.log

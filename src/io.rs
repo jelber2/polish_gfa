@@ -25,6 +25,11 @@ impl ReadSource {
     fn read_until(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
         self.reader.read_until(b'\n', buf)
     }
+
+    /// Consume the source and return its buffered reader (used for GFAs).
+    pub fn into_reader(self) -> Box<dyn BufRead + Send> {
+        self.reader
+    }
 }
 
 /// Open a read file. `rapidgzip` uses the built-in `rapidgzip-core` crate
@@ -69,6 +74,15 @@ pub fn open_source(
     Ok(ReadSource {
         reader: Box::new(BufReader::with_capacity(1 << 20, dec)),
     })
+}
+
+/// Open a GFA (plain or gzip/bgzip) as a buffered line reader.
+pub fn open_gfa(
+    path: &str,
+    decompressor: Decompressor,
+    gzip_threads: usize,
+) -> io::Result<Box<dyn BufRead + Send>> {
+    Ok(open_source(path, decompressor, gzip_threads)?.into_reader())
 }
 
 pub struct FastxReader {

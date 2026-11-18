@@ -31,8 +31,27 @@ check() {
     echo "ok: $got"
 }
 
+# The TSV's first column is the GFA path as given, so compare the body only
+# when the same assembly is supplied under a different filename.
+check_body() {
+    local got=$1 exp=$2
+    if ! cmp -s <(cut -f2- "$got") <(cut -f2- "$here/expected/$exp"); then
+        echo "FAIL: $got body differs from expected/$exp"
+        exit 1
+    fi
+    echo "ok: $got (body)"
+}
+
 run base reads.fq.gz --gfa base.bp.p_ctg.gfa -t 8
 check base.bp.p_ctg.poa.tsv base.poa.tsv
+check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
+check base.bp.p_ctg.poa.fa base.bp.p_ctg.poa.fa
+
+# gzipped GFA input
+gzip -c base.bp.p_ctg.gfa > base.bp.p_ctg.gfa.gz
+rm -f base.bp.p_ctg.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
+run base reads.fq.gz --gfa base.bp.p_ctg.gfa.gz -t 8
+check_body base.bp.p_ctg.poa.tsv base.poa.tsv
 check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
 check base.bp.p_ctg.poa.fa base.bp.p_ctg.poa.fa
 

@@ -5,8 +5,9 @@ dataset and compares the `.poa.tsv`, `.poa.gfa` and `.poa.fa` outputs against
 `expected/`. The expected files were produced by the original C++ driver
 (`poa-test/polish_gfa` in hifiasm-fast) before it was ported to Rust; the Rust
 implementation reproduces them byte-for-byte. The script also runs the damaged
-(`degraded.p_ctg.gfa`) assembly with `--index-chunk 2`, and exercises both the
-built-in rapidgzip-core backend and the zlib backend.
+(`degraded.p_ctg.gfa`) assembly with `--index-chunk 2`, checks a gzipped GFA
+input, and exercises both the built-in rapidgzip-core backend and the zlib
+backend.
 
 ```bash
 ./run_tests.sh

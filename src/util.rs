@@ -74,5 +74,10 @@ pub fn median(v: &mut [i64]) -> i64 {
 }
 
 pub fn strip_gfa_suffix(fn_: &str) -> &str {
-    fn_.strip_suffix(".gfa").unwrap_or(fn_)
+    for suf in [".gfa.gz", ".gfa.bgz", ".gfa", ".bgz", ".gz"] {
+        if let Some(stem) = fn_.strip_suffix(suf) {
+            return stem;
+        }
+    }
+    fn_
 }

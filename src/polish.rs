@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::io::{BufRead, BufWriter, Write};
 use std::path::Path;
 use std::time::Instant;
 
@@ -8,6 +8,7 @@ use poa_consensus::{consensus, consensus_flanked, PoaConfig};
 use rustc_hash::FxHashSet;
 
 use crate::index::{build_index, SeedIndex};
+use crate::io::open_gfa;
 use crate::model::{Locus, LocusStat, Opts, PatchResult, RecruitStats, TrRegion};
 use crate::recruit::stream_recruit;
 use crate::tr::TrDetector;
@@ -40,8 +41,8 @@ fn parse_s_line(line: &str) -> Option<(String, Vec<u8>, String)> {
 }
 
 fn collect_loci(gfa: &str, opts: &Opts, detector: &mut TrDetector) -> Result<Vec<Locus>> {
-    let f = File::open(gfa).with_context(|| format!("open {gfa}"))?;
-    let reader = BufReader::with_capacity(1 << 20, f);
+    let reader = open_gfa(gfa, opts.decompressor, opts.gzip_threads)
+        .with_context(|| format!("open {gfa}"))?;
     let mut loci = Vec::new();
     for line in reader.lines() {
         let line = line?;
@@ -619,8 +620,8 @@ fn polish_one_gfa(gfa: &str, opts: &Opts, tsv: &mut dyn Write, c: &mut Counters)
     let base = strip_gfa_suffix(gfa);
     let out_path = format!("{base}.poa.gfa");
     let fa_path = format!("{base}.poa.fa");
-    let in_f = File::open(gfa).with_context(|| format!("open {gfa}"))?;
-    let reader = BufReader::with_capacity(1 << 20, in_f);
+    let reader = open_gfa(gfa, opts.decompressor, opts.gzip_threads)
+        .with_context(|| format!("open {gfa}"))?;
     let mut out = BufWriter::new(File::create(&out_path)?);
     let mut fa = BufWriter::new(File::create(&fa_path)?);
 

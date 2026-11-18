@@ -23,7 +23,8 @@ struct Args {
     #[arg(value_name = "READS", num_args = 0..)]
     paths: Vec<String>,
 
-    /// Hifiasm contig GFA to polish. Repeatable (or comma-separated).
+    /// Hifiasm contig GFA to polish (optionally gzip/bgzip-compressed).
+    /// Repeatable (or comma-separated).
     #[arg(long = "gfa", value_name = "GFA", required = true, action = clap::ArgAction::Append, value_delimiter = ',')]
     gfa: Vec<String>,
 

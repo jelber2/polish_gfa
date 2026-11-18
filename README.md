@@ -39,11 +39,13 @@ polish_gfa --gfa asm.bp.p_ctg.gfa,asm.bp.hap1.p_ctg.gfa reads.fq.gz
 ```
 
 `--gfa` takes the GFA file directly, so any hifiasm contig graph can be
-polished without knowing the assembly prefix. Outputs per GFA:
+polished without knowing the assembly prefix. Plain `.gfa`, gzip
+(`.gfa.gz`) and bgzip (`.gfa.bgz`) inputs are accepted; outputs are always
+uncompressed. Outputs per GFA:
 
 ```
-<gfa-without-.gfa>.poa.gfa   patched contig graph, A-line offsets shifted
-<gfa-without-.gfa>.poa.fa    patched contigs as FASTA
+<gfa-without-.gfa[.gz|.bgz]>.poa.gfa   patched contig graph, offsets shifted
+<gfa-without-.gfa[.gz|.bgz]>.poa.fa    patched contigs as FASTA
 <first-gfa-without-.gfa>.poa.tsv
                              one row per locus: period, copies, lengths,
                              reads, k-mer support before/after, status
@@ -55,7 +57,7 @@ Use `--tsv <FILE>` to choose the report path when polishing several GFAs.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--gfa GFA` | required | hifiasm contig GFA to polish; repeatable or comma-separated |
+| `--gfa GFA` | required | hifiasm contig GFA (plain, `.gz` or `.bgz`) to polish; repeatable or comma-separated |
 | `--tsv FILE` | `<first-gfa>.poa.tsv` | TSV report path |
 | `-t, --threads INT` | all CPUs | stream/POA worker threads |
 | `-f, --flank INT` | 120 | flank length used to anchor a repeat (≥40) |
@@ -143,7 +145,7 @@ parsing time. `kseq`-style FASTA and FASTQ are both accepted.
 ```
 
 The included 30× simulated ONT dataset and golden outputs are described in
-`tests/README.md`. The Rust outputs are byte-identical to the original C++
+`tests/README.md`; the suite also checks gzipped GFA input. The Rust outputs are byte-identical to the original C++
 driver on both the correct and 8%-deleted assemblies.
 
 ## License

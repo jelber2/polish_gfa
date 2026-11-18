@@ -15,17 +15,18 @@ standalone Rust implementation with byte-identical outputs.
 
 ## Build
 
-Requires Rust ≥ 1.85 (the `poa-consensus` crate is edition 2024). The first
-build fetches the pinned `poa-consensus` crate from GitHub.
+Requires Rust ≥ 1.88 (both `poa-consensus` and `rapidgzip-core` are edition
+2024). The first build fetches the pinned crates from GitHub.
 
 ```bash
 cargo build --release
 # -> target/release/polish_gfa
 ```
 
-Optional: install [rapidgzip](https://github.com/mxmlnkn/rapidgzip) so the
-`rapidgzip` binary is in `PATH` (`python3 -m pip install rapidgzip`) for
-parallel decompression of a single gzip file. Without it the tool uses zlib.
+Gzip input is decoded by the built-in
+[rapidgzip-core](https://github.com/COMBINE-lab/rapidgzip-rust) crate (parallel
+DEFLATE decoding of a single gzip file; no external `rapidgzip` binary is
+needed). `--decompressor zlib` selects the slower single-threaded flate2 path.
 
 ## Usage
 
@@ -66,8 +67,8 @@ Use `--tsv <FILE>` to choose the report path when polishing several GFAs.
 | `--max-locus-len INT` | 100,000 | skip arrays longer than this; `0` = no limit |
 | `--min-array INT` | 60 | minimum array length considered; use 150–200 for WGS |
 | `--index-chunk INT` | 1,000,000 | build the seed index for this many loci at a time; `0` = all at once |
-| `--decompressor STR` | auto | `auto`, `zlib` or `rapidgzip` |
-| `--gzip-threads INT` | 0 (auto) | rapidgzip decoder threads per input file |
+| `--decompressor STR` | auto | `auto`/`rapidgzip` use built-in rapidgzip-core; `zlib` uses flate2 |
+| `--gzip-threads INT` | 0 (auto) | rapidgzip-core decoder threads per input file |
 
 Examples:
 
@@ -129,7 +130,8 @@ index. Each chunk costs one full read pass per GFA. For example, 8M loci at
 `--max-candidate-bases` is a safety limit on the trimmed reads held in memory
 (~1.1 bytes/base). It is global across chunks; if reached, the remaining chunks
 are skipped. For a 34× 3.2 Gbp run (~108.8 Gbp per GFA) use ~20 Gbp
-(≈22 GB), and rapidgzip to avoid the single-threaded gzip floor.
+(≈22 GB), and the default rapidgzip-core backend to avoid the single-threaded
+gzip floor.
 
 FASTA input does **not** reduce index memory; it only cuts decompression and
 parsing time. `kseq`-style FASTA and FASTQ are both accepted.

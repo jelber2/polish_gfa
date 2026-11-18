@@ -83,11 +83,15 @@ struct Args {
     )]
     index_chunk: usize,
 
-    /// Read stream backend.
-    #[arg(long = "decompressor", default_value = "auto", value_name = "STR")]
+    /// Read stream backend: auto/rapidgzip use built-in rapidgzip-core.
+    #[arg(
+        long = "decompressor",
+        default_value = "auto",
+        value_name = "auto|zlib|rapidgzip"
+    )]
     decompressor: String,
 
-    /// rapidgzip threads per input file; 0 = auto.
+    /// rapidgzip-core decoder threads per input file; 0 = auto.
     #[arg(long = "gzip-threads", default_value_t = 0usize, value_name = "INT")]
     gzip_threads: usize,
 }

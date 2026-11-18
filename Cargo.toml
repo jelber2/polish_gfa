@@ -2,7 +2,7 @@
 name = "polish_gfa"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Standalone poa-consensus VNTR/tandem-repeat polishing for hifiasm contig GFAs"
 license = "MIT OR Apache-2.0"
 
@@ -13,6 +13,7 @@ crossbeam-channel = "0.5"
 flate2 = "1"
 memchr = "2"
 poa-consensus = { git = "https://github.com/Psy-Fer/poa-consensus", tag = "v0.7.0" }
+rapidgzip-core = { git = "https://github.com/COMBINE-lab/rapidgzip-rust", tag = "v0.3.1" }
 rustc-hash = "2"
 
 [profile.release]

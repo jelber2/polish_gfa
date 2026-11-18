@@ -1,35 +1,10 @@
-use std::env;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
-use std::path::Path;
-use std::process::{Child, Command, Stdio};
 
 use flate2::read::MultiGzDecoder;
+use rapidgzip_core::Decoder;
 
 use crate::model::Decompressor;
-
-pub fn command_available(name: &str) -> bool {
-    let Some(path) = env::var_os("PATH") else {
-        return false;
-    };
-    env::split_paths(&path).any(|dir| {
-        let p = dir.join(name);
-        p.is_file() && is_executable(&p)
-    })
-}
-
-#[cfg(unix)]
-fn is_executable(p: &Path) -> bool {
-    use std::os::unix::fs::PermissionsExt;
-    p.metadata()
-        .map(|m| m.permissions().mode() & 0o111 != 0)
-        .unwrap_or(false)
-}
-
-#[cfg(not(unix))]
-fn is_executable(p: &Path) -> bool {
-    p.is_file()
-}
 
 pub fn path_is_gzip(path: &str) -> bool {
     if path.ends_with(".gz") || path.ends_with(".bgz") {
@@ -43,31 +18,18 @@ pub fn path_is_gzip(path: &str) -> bool {
 }
 
 pub struct ReadSource {
-    reader: Option<Box<dyn BufRead + Send>>,
-    child: Option<Child>,
+    reader: Box<dyn BufRead + Send>,
 }
 
 impl ReadSource {
     fn read_until(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
-        self.reader.as_mut().unwrap().read_until(b'\n', buf)
+        self.reader.read_until(b'\n', buf)
     }
 }
 
-impl Drop for ReadSource {
-    fn drop(&mut self) {
-        // Drop the pipe/stdout before waiting, or a blocked writer deadlocks.
-        self.reader.take();
-        if let Some(mut child) = self.child.take() {
-            match child.wait() {
-                Ok(st) if !st.success() => {
-                    eprintln!("[polish_gfa] warning: rapidgzip exited with {st}");
-                }
-                _ => {}
-            }
-        }
-    }
-}
-
+/// Open a read file. `rapidgzip` uses the built-in `rapidgzip-core` crate
+/// (parallel DEFLATE decoding); `zlib` uses flate2. `auto` prefers
+/// rapidgzip-core. Plain files bypass both.
 pub fn open_source(
     path: &str,
     decompressor: Decompressor,
@@ -76,30 +38,28 @@ pub fn open_source(
     if !path_is_gzip(path) {
         let f = File::open(path)?;
         return Ok(ReadSource {
-            reader: Some(Box::new(BufReader::with_capacity(1 << 20, f))),
-            child: None,
+            reader: Box::new(BufReader::with_capacity(1 << 20, f)),
         });
     }
 
-    let want_rapidgzip = decompressor == Decompressor::Rapidgzip
-        || (decompressor == Decompressor::Auto && command_available("rapidgzip"));
-    if want_rapidgzip {
-        match Command::new("rapidgzip")
-            .args(["-d", "-c", "-P", &gzip_threads.max(1).to_string(), path])
-            .stdout(Stdio::piped())
-            .spawn()
+    if decompressor != Decompressor::Zlib {
+        let opened = match Decoder::builder()
+            .decoder_threads(gzip_threads.max(1))
+            .build()
         {
-            Ok(mut child) => {
-                let stdout = child.stdout.take().expect("piped stdout");
+            Ok(decoder) => decoder.open(path).map_err(io::Error::other),
+            Err(e) => Err(io::Error::other(e)),
+        };
+        match opened {
+            Ok(reader) => {
                 return Ok(ReadSource {
-                    reader: Some(Box::new(BufReader::with_capacity(1 << 20, stdout))),
-                    child: Some(child),
+                    reader: Box::new(BufReader::with_capacity(1 << 20, reader)),
                 });
             }
             Err(e) => {
-                if decompressor == Decompressor::Rapidgzip {
-                    eprintln!("[polish_gfa] warning: could not start rapidgzip ({e}); using zlib");
-                }
+                eprintln!(
+                    "[polish_gfa] warning: rapidgzip-core failed for {path} ({e}); using zlib"
+                );
             }
         }
     }
@@ -107,8 +67,7 @@ pub fn open_source(
     let f = File::open(path)?;
     let dec = MultiGzDecoder::new(f);
     Ok(ReadSource {
-        reader: Some(Box::new(BufReader::with_capacity(1 << 20, dec))),
-        child: None,
+        reader: Box::new(BufReader::with_capacity(1 << 20, dec)),
     })
 }
 

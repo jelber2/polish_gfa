@@ -42,11 +42,14 @@ check degraded.p_ctg.poa.tsv degraded.poa.tsv
 check degraded.p_ctg.poa.gfa degraded.p_ctg.poa.gfa
 check degraded.p_ctg.poa.fa degraded.p_ctg.poa.fa
 
-if command -v rapidgzip >/dev/null 2>&1; then
-    rm -f base.bp.p_ctg.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
-    run base reads.fq.gz --gfa base.bp.p_ctg.gfa -t 8 --decompressor rapidgzip --gzip-threads 4
-    check base.bp.p_ctg.poa.tsv base.poa.tsv
-    check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
-fi
+rm -f base.bp.p_ctg.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
+run base reads.fq.gz --gfa base.bp.p_ctg.gfa -t 8 --decompressor zlib
+check base.bp.p_ctg.poa.tsv base.poa.tsv
+check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
+
+rm -f base.bp.p_ctg.poa.tsv base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.fa
+run base reads.fq.gz --gfa base.bp.p_ctg.gfa -t 8 --decompressor rapidgzip --gzip-threads 4
+check base.bp.p_ctg.poa.tsv base.poa.tsv
+check base.bp.p_ctg.poa.gfa base.bp.p_ctg.poa.gfa
 
 echo "all tests passed"

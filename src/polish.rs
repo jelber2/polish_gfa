@@ -736,15 +736,9 @@ pub fn run(opts: &Opts) -> Result<i32> {
         "unlimited".to_string()
     };
     let backend = match opts.decompressor {
-        crate::model::Decompressor::Auto => {
-            if crate::io::command_available("rapidgzip") {
-                "rapidgzip (auto)"
-            } else {
-                "zlib (auto)"
-            }
-        }
+        crate::model::Decompressor::Auto => "rapidgzip-core (auto)",
         crate::model::Decompressor::Zlib => "zlib",
-        crate::model::Decompressor::Rapidgzip => "rapidgzip",
+        crate::model::Decompressor::Rapidgzip => "rapidgzip-core",
     };
     eprintln!("[polish_gfa] read backend: {backend}; plain inputs bypass it");
     eprintln!(

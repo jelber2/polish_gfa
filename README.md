@@ -154,8 +154,7 @@ long WGS run.
 ```
 
 The included 30× simulated ONT dataset and golden outputs are described in
-`tests/README.md`; the suite also checks gzipped GFA input. The Rust outputs are byte-identical to the original C++
-driver on both the correct and 8%-deleted assemblies.
+`tests/README.md`; the suite also checks gzipped GFA input.
 
 ## License
 
